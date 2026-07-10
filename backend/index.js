@@ -1,17 +1,22 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
 dotenv.config();
 import chatRoutes from "./routes/chat.routes.js";
 import { initializeAI } from "./config/geminiAPI_config.js";
 import { connectDB } from "./config/DB.js";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create an Express application
 const app = express();
 
 export const ai = initializeAI();
 
-app.use(express.static("public", "dist"));
+app.use(express.static(path.join(__dirname, "public", "dist")));
 
 // Middleware
 app.use(
@@ -32,7 +37,12 @@ app.get("/", (req, res) => {
 // Use the chat routes
 app.use("/api/chats", chatRoutes);
 
-app.use("*", express.static("public", "dist"));
+// React routes
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dist", "index.html"));
+});
+
+// Start the server
 
 const server = app.listen(8080, () => {
   console.log("Server is running on http://localhost:8080");

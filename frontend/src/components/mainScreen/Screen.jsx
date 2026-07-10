@@ -15,10 +15,7 @@ function Screen() {
   const [titles, setTtiles] = useState([]);
   const [isNewChat, setIsNewChat] = useState(true);
   const [conversationId, setConversationId] = useState(null);
-  const apiUrl = useMemo(
-    () => import.meta.env.VITE_API_URL || "http://localhost:8000/api/",
-    [],
-  );
+  const apiUrl = useMemo(() => import.meta.env.VITE_API_URL || "api/", []);
   const handleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -28,7 +25,7 @@ function Screen() {
     setSidebarOpen(false);
     setAiResponse("");
   };
-
+  console.log("API URL:", apiUrl);
   const getSavedMessages = async () => {
     try {
       const response = await fetch(`${apiUrl}chats/saved`, {
