@@ -11,6 +11,8 @@ const app = express();
 
 export const ai = initializeAI();
 
+app.use(express.static("public", "dist"));
+
 // Middleware
 app.use(
   cors({
@@ -29,6 +31,8 @@ app.get("/", (req, res) => {
 
 // Use the chat routes
 app.use("/api/chats", chatRoutes);
+
+app.use("*", express.static("public", "dist"));
 
 const server = app.listen(8080, () => {
   console.log("Server is running on http://localhost:8080");
