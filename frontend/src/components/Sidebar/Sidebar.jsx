@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./Sidebar.module.css";
+import styles from "./SideBar.module.css";
 import { Plus, X } from "lucide-react";
 
 export default function Sidebar({
