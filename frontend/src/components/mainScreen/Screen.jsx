@@ -15,7 +15,10 @@ function Screen() {
   const [titles, setTtiles] = useState([]);
   const [isNewChat, setIsNewChat] = useState(true);
   const [conversationId, setConversationId] = useState(null);
-
+  const apiUrl = useMemo(
+    () => import.meta.env.VITE_API_URL || "http://localhost:8000/api/",
+    [],
+  );
   const handleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -28,7 +31,9 @@ function Screen() {
 
   const getSavedMessages = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/chats/saved");
+      const response = await fetch(`${apiUrl}chats/saved`, {
+        method: "GET",
+      });
       if (response.ok) {
         const result = await response.json();
         console.log(result);
@@ -42,7 +47,7 @@ function Screen() {
   const saveChats = async () => {
     try {
       const chats = messages;
-      const response = await fetch("http://localhost:8080/api/chats/save", {
+      const response = await fetch(`${apiUrl}chats/save`, {
         body: JSON.stringify({ chats }),
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +72,7 @@ function Screen() {
     try {
       const data = { message: chatInput, previousId, isNewChat };
       console.log("Sending to AI:", data);
-      const response = await fetch("http://localhost:8080/api/chats/new", {
+      const response = await fetch(`${apiUrl}chats/new`, {
         body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
