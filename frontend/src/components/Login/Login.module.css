@@ -1,0 +1,128 @@
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.18), transparent 35%),
+    linear-gradient(135deg, #020617, #0f172a 55%, #111827);
+}
+
+.authPanel {
+  width: min(100%, 460px);
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.badge {
+  align-self: flex-start;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.header p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.toggleBar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 22px;
+  background: rgba(30, 41, 59, 0.85);
+  padding: 6px;
+  border-radius: 14px;
+}
+
+.tabButton,
+.activeTab {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.tabButton {
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.activeTab {
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: white;
+}
+
+.formCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  color: #dbeafe;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.85);
+  color: white;
+}
+
+.input::placeholder {
+  color: #94a3b8;
+}
+
+.primaryButton {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  color: white;
+}
+
+.statusText {
+  margin: 0;
+  color: #86efac;
+  font-size: 0.92rem;
+}

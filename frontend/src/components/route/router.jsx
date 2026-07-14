@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../../App";
-export const Router = createBrowserRouter([
-    { path: "/", element: <App /> },
-    { path: "/chat/:chatId", element: <App /> },
-]);
+import LoginPage from "../Pages/Login";
 
+export const Router = createBrowserRouter([
+  { path: "/", element: <LoginPage /> },
+  { path: "/login", element: <LoginPage /> },
+  { path: "/chat/:chatId", element: <App /> },
+]);

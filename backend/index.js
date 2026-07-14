@@ -4,9 +4,11 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 dotenv.config();
 import chatRoutes from "./routes/chat.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { initializeAI } from "./config/geminiAPI_config.js";
 import { connectDB } from "./config/DB.js";
 import path from "path";
+import cookieParser from "cookie-parser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,18 +18,21 @@ const app = express();
 
 export const ai = initializeAI();
 
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public", "dist")));
 
 // Middleware
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Allow cookies to be sent
   }),
 );
 app.use(express.json());
 
 // DB connection
-// connectDB();
+connectDB();
 
 // Routes
 app.get("/", (req, res) => {
@@ -36,6 +41,9 @@ app.get("/", (req, res) => {
 
 // Use the chat routes
 app.use("/api/chats", chatRoutes);
+
+// Use the user routes
+app.use("/api/users", userRoutes);
 
 // React routes
 app.use((req, res) => {
