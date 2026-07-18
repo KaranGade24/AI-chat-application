@@ -9,6 +9,7 @@ import { initializeAI } from "./config/geminiAPI_config.js";
 import { connectDB } from "./config/DB.js";
 import path from "path";
 import cookieParser from "cookie-parser";
+import authMiddleware from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,7 +41,7 @@ app.get("/", (req, res) => {
 });
 
 // Use the chat routes
-app.use("/api/chats", chatRoutes);
+app.use("/api/chats", authMiddleware, chatRoutes);
 
 // Use the user routes
 app.use("/api/users", userRoutes);

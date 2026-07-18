@@ -36,11 +36,16 @@ export const createUser = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const token = jwt.sign({ name, email }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
 
     const user = new User({ name, email, password: hashedPassword });
+
+    const token = jwt.sign(
+      { name, email, id: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
 
     await user.save();
     // res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
@@ -69,7 +74,7 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
     const token = jwt.sign(
-      { name: user.name, email: user.email },
+      { name: user.name, email: user.email, id: user._id },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
@@ -80,6 +85,20 @@ export const loginUser = async (req, res) => {
     res.json({ user, token });
   } catch (error) {
     console.error("Error logging in user:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching current user:", error);
     res.status(400).json({ message: error.message });
   }
 };

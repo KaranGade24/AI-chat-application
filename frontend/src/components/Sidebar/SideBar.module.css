@@ -1,92 +1,178 @@
 .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    background-color: rgb(20, 22, 28);
-    color: white;
-    transform: translateX(-100%);
-    transition: transform 220ms ease;
-    z-index: 20;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  background-color: rgb(20, 22, 28);
+  color: white;
+  transform: translateX(-100%);
+  transition: transform 220ms ease;
+  z-index: 20;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
 }
 
 .open {
-    transform: translateX(0);
+  transform: translateX(0);
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .title {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: white;
 }
 
 .closeButton {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 .newChat {
-    width: 100%;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    background: rgb(56, 56, 58);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    text-align: left;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: rgb(56, 56, 58);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .iconButton {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 10px;
 }
 
 .iconButton:hover,
 .newChat:hover,
 .chatItem:hover {
-    background: rgb(48, 49, 55);
+  background: rgb(48, 49, 55);
 }
 
 .chatList {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.chatRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .chatItem {
-    background: rgb(33, 34, 40);
-    color: white;
-    padding: 14px 16px;
-    border-radius: 12px;
-    border: none;
-    text-align: left;
-    cursor: pointer;
+  flex: 1;
+  background: rgb(33, 34, 40);
+  color: white;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chatItem:hover {
-    background: rgb(48, 49, 55);
+  background: rgb(48, 49, 55);
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.12);
+  color: #fda4af;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.deleteButton:hover {
+  background: rgba(248, 113, 113, 0.24);
+}
+
+.active {
+  background: #2d2d2d;
+  color: white;
+  font-weight: 600;
+}
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  padding: 20px;
+}
+
+.confirmBox {
+  width: min(320px, 100%);
+  background: rgb(24, 25, 31);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.confirmBox p {
+  margin: 0 0 14px;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelButton,
+.confirmButton {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.cancelButton {
+  background: rgb(56, 56, 58);
+  color: white;
+}
+
+.confirmButton {
+  background: #f43f5e;
+  color: white;
 }

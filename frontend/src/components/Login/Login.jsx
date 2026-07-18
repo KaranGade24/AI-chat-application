@@ -4,6 +4,7 @@ import styles from "./Login.module.css";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const apiUrl = useMemo(() => import.meta.env.VITE_API_URL || "api/", []);
   const [formData, setFormData] = useState({
     email: "",
@@ -19,11 +20,12 @@ function LoginForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatusMessage("");
-
+    setLoading(true);
     // validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setStatusMessage("Invalid email format.");
+      setLoading(false);
       return;
     }
     // validate password format
@@ -32,6 +34,7 @@ function LoginForm() {
       setStatusMessage(
         "Invalid password format. Must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
       );
+      setLoading(false);
       return;
     }
 
@@ -56,6 +59,8 @@ function LoginForm() {
       navigate("/chat/new");
     } catch (error) {
       setStatusMessage(error.message || "Unable to login right now.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,8 +102,8 @@ function LoginForm() {
         <p className={styles.statusText}>{statusMessage}</p>
       ) : null}
 
-      <button className={styles.primaryButton} type="submit">
-        Login
+      <button className={styles.primaryButton} type="submit" disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
       </button>
     </form>
   );
