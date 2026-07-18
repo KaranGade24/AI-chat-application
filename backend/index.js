@@ -25,7 +25,10 @@ app.use(express.static(path.join(__dirname, "public", "dist")));
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://ai-chat-application-8t31.onrender.com",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow cookies to be sent
   }),
@@ -36,8 +39,11 @@ app.use(express.json());
 connectDB();
 
 // Routes
-app.get("/", (req, res) => {
-  res.send("Hello from the backend!");
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Backend is running",
+  });
 });
 
 // Use the chat routes

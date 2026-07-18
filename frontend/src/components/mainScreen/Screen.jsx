@@ -32,8 +32,10 @@ function Screen({ chatId }) {
   const chatInfoRef = useRef(chatInfo);
   const interactionIdRef = useRef(null);
   const navigate = useNavigate();
-  const apiUrl = useMemo(() => import.meta.env.VITE_API_URL || "api/", []);
-
+  const apiUrl = useMemo(
+    () => import.meta.env.VITE_API_URL || `${location.origin}/api/`,
+    [],
+  );
   const normalizeChatInfo = (value) => {
     if (!value) return null;
 
