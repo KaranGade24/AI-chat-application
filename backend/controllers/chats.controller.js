@@ -1,4 +1,4 @@
-import { ai } from "../index.js";
+import { runChatGraphStream } from "../ai/index.js";
 import { Conversation } from "../models/conversation.js";
 import { Chat } from "../models/chats.js";
 import mongoose from "mongoose";
@@ -8,6 +8,7 @@ export const createChat = async (req, res) => {
     console.log("Received request body:", req.body);
     let { message, previousId, isNewChat, chatId } = req.body;
     console.log({ message, previousId, isNewChat });
+
     if (!message || !message.trim()) {
       return res.status(400).json({ error: "Message cannot be empty" });
     }
@@ -16,109 +17,46 @@ export const createChat = async (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
-    const systemInstruction = `At the beginning of every response, include the chat title in this exact format:
 
-  **title: <chat title>**
+    const userId = req.user?.id;
 
-  Then leave one blank line and continue with the normal response.
-
-  Rules:
-
-  * Include the title only once.
-  * The title should summarize the overall conversation.
-  * If the conversation is still on the same topic, keep the existing title.
-  * If the topic changes significantly, update the title.
-  * Do not mention that you are generating or updating the title.
-  * Do not use any other title format.
-  `;
-
-    const response = await ai.interactions.create({
-      model: "gemini-3.1-flash-lite",
-      input: message,
-      stream: true,
-      previous_interaction_id: previousId,
-      system_instruction: systemInstruction,
+    // Stream LLM chunks to SSE client in real time via LangGraph workflow
+    const result = await runChatGraphStream({
+      message,
+      chatId,
+      userId,
+      isNewChat: Boolean(isNewChat),
+      onChunk: (textChunk) => {
+        res.write(
+          `event: message\n` +
+            `data: ${JSON.stringify({
+              type: "chunk",
+              text: textChunk,
+            })}\n\n`,
+        );
+      },
     });
 
-    let streamedText = "";
-    let interactionId = null;
-    let title = null;
-    let titleExtracted = false;
-    let buffer = "";
-    let savedConversation = null;
-    let savedChat = null;
+    const interactionId =
+      result.savedConversation?.chat?.interactionID ||
+      previousId ||
+      `graph_${Date.now()}`;
 
-    for await (const event of response) {
-      if (event.event_type === "interaction.created") {
-        interactionId = event.interaction.id;
-        console.log("Interaction:", interactionId);
-        continue;
-      }
-
-      if (event.event_type !== "step.delta") continue;
-      if (event.delta.type !== "text") continue;
-
-      const textChunk = event.delta.text ?? "";
-      process.stdout.write(textChunk);
-      if (!textChunk) continue;
-
-      if (!titleExtracted) {
-        buffer += textChunk;
-        const match = buffer.match(/^\s*\*\*title:\s*(.*?)\*\*\s*/i);
-        if (!match) {
-          continue;
-        }
-
-        title = match[1].trim();
-        titleExtracted = true;
-
-        console.log("Title:", title);
-
-        const remaining = buffer.replace(match[0], "");
-
-        if (remaining) {
-          streamedText = remaining;
-          res.write(
-            `event: message\n` +
-              `data: ${JSON.stringify({
-                type: "chunk",
-                text: remaining,
-              })}\n\n`,
-          );
-        }
-
-        buffer = "";
-        continue;
-      }
-      streamedText += textChunk;
-      res.write(
-        `event: message\n` +
-          `data: ${JSON.stringify({
-            type: "chunk",
-            text: textChunk,
-          })}\n\n`,
-      );
-    }
-    const userId = req.user.id;
-    if (streamedText.trim()) {
-      const result = await saveChatToDB({
-        userId,
-        userMessage: message,
-        assistantMessage: streamedText,
-        interactionID: interactionId,
-        title,
-        chatId,
-      });
-      savedConversation = result.conversation;
-      savedChat = result.savedChat;
-    }
+    // Emit the done event payload conforming to frontend contract
     res.write(
-      `event: done\ndata: ${JSON.stringify({ type: "done", interactionId, title, text: streamedText, conversation: savedConversation, savedChat })}\n\n`,
+      `event: done\ndata: ${JSON.stringify({
+        type: "done",
+        interactionId,
+        title: result.title,
+        text: result.response,
+        conversation: result.savedConversation,
+        savedChat: result.savedChat,
+      })}\n\n`,
     );
     res.end();
   } catch (error) {
     console.error(
-      "Error in server-side context execution:",
+      "Error in server-side LangGraph execution:",
       error?.stack || error,
     );
     if (!res.headersSent) {
@@ -127,97 +65,14 @@ export const createChat = async (req, res) => {
         .json({ error: error?.message || "Internal server error" });
     }
     res.write(
-      `event: error\ndata: ${JSON.stringify({ error: error?.message || "Internal server error" })}\n\n`,
+      `event: error\ndata: ${JSON.stringify({
+        error: error?.message || "Internal server error",
+      })}\n\n`,
     );
     res.end();
   }
 };
 
-const saveChatToDB = async ({
-  userId,
-  userMessage,
-  assistantMessage,
-  interactionID,
-  title,
-  chatId,
-}) => {
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    let conversation;
-
-    if (chatId && !mongoose.Types.ObjectId.isValid(chatId)) {
-      throw new Error("Invalid conversation id.");
-    }
-
-    if (chatId) {
-      conversation = await Conversation.findByIdAndUpdate(
-        chatId,
-        {
-          $set: {
-            "chat.interactionID": interactionID,
-            "chat.title": title,
-          },
-        },
-        {
-          returnDocument: "after",
-          session,
-          runValidators: true,
-        },
-      );
-
-      if (!conversation) {
-        throw new Error("Conversation not found.");
-      }
-    } else {
-      const conversations = await Conversation.create(
-        [
-          {
-            chat: {
-              userId,
-              interactionID,
-              title,
-            },
-          },
-        ],
-        { session },
-      );
-
-      conversation = conversations[0];
-    }
-
-    const chats = await Chat.create(
-      [
-        {
-          user: {
-            input: userMessage,
-          },
-          assistant: {
-            answer: assistantMessage,
-          },
-          chat: conversation._id,
-        },
-      ],
-      { session },
-    );
-
-    const savedChat = chats[0];
-
-    await session.commitTransaction();
-
-    return {
-      conversation,
-      savedChat,
-    };
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
-};
 
 export const getSavedChats = async (req, res) => {
   try {

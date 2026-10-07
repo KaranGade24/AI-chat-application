@@ -4,6 +4,9 @@ dotenv.config();
 console.log("GOOGLE_API_KEY:", process.env.GOOGLE_API_KEY);
 
 export const initializeAI = () => {
+  if (!process.env.GOOGLE_API_KEY) {
+    return null;
+  }
   const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_API_KEY,
   });
