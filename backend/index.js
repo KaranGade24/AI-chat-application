@@ -59,6 +59,7 @@ app.use((req, res) => {
 
 // Start the server
 
-const server = app.listen(8080, () => {
-  console.log("Server is running on http://localhost:8080");
+const PORT = process.env.PORT || 8080;
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

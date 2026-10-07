@@ -14,7 +14,7 @@ Respond strictly with a JSON object in this format:
 
 Intent definitions:
 - "calculator": Explicit math calculations or arithmetic expressions (e.g., "calculate 145 * 32", "what is 25% of 850"). toolInput should be the math expression.
-- "web_search": Queries needing recent real-time web info, live news, weather, or current events that require up-to-date search. toolInput should be the search keyword.
+- "web_search": Queries needing recent real-time web info, live news, weather, or current events that require up-to-date search. toolInput MUST be a clear, standalone search query. If the user refers to past context (e.g., "search again", "look that up", "tell me more about it"), deduce the actual topic from the conversation history and construct a complete, specific search keyword for toolInput.
 - "conversation_history": When the user explicitly refers to earlier parts of the chat (e.g., "what did I say earlier?", "what was the first thing I asked you?", "repeat my previous question").
 - "summarize": When the user asks to summarize their previous conversation or key points discussed so far.
 - "normal_question": General questions, programming explanations, creative writing, advice, coding, or chit-chat.
