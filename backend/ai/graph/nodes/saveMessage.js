@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 export const saveMessageNode = async (state) => {
   const { userId, message, response, chatId, title } = state;
 
-  if (!response || !response.trim()) {
+  if (!response || !response.trim() || mongoose.connection.readyState !== 1) {
     return { savedConversation: null, savedChat: null };
   }
 

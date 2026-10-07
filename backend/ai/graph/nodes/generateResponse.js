@@ -100,12 +100,28 @@ export const generateResponseNode = async (state, config) => {
     return { response: fullResponse };
   } catch (err) {
     console.error("Error generating response with Gemini model:", err);
-    const fallbackError = `I apologize, but I encountered an issue generating a response: ${err.message}`;
+
+    let userFacingMessage =
+      "I apologize, but I encountered an unexpected issue while generating a response. Please try asking again in a moment.";
+
+    const errMsg = err?.message || "";
+    if (
+      errMsg.includes("429") ||
+      errMsg.toLowerCase().includes("quota") ||
+      errMsg.toLowerCase().includes("resource_exhausted")
+    ) {
+      userFacingMessage =
+        "I am temporarily experiencing high API traffic or quota rate limits. Please wait a short moment and try again.";
+    } else if (errMsg.includes("403") || errMsg.toLowerCase().includes("api key")) {
+      userFacingMessage =
+        "The AI service is temporarily unavailable due to an API authorization issue. Please check the API key configuration.";
+    }
+
     if (typeof onChunk === "function") {
-      onChunk(fallbackError);
+      onChunk(userFacingMessage);
     }
     return {
-      response: fallbackError,
+      response: userFacingMessage,
       error: err.message,
     };
   }

@@ -11,7 +11,11 @@ import mongoose from "mongoose";
 export const getHistoryNode = async (state) => {
   const { chatId } = state;
 
-  if (!chatId || !mongoose.Types.ObjectId.isValid(chatId)) {
+  if (
+    !chatId ||
+    !mongoose.Types.ObjectId.isValid(chatId) ||
+    mongoose.connection.readyState !== 1
+  ) {
     return { history: [], title: state.title || null };
   }
 
