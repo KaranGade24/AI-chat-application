@@ -224,8 +224,17 @@ function Screen({ chatId }) {
         credentials: "include",
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error(`AI request failed with status ${response.status}`);
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(
+          result.error ||
+            result.message ||
+            `AI request failed with status ${response.status}`,
+        );
+      }
+
+      if (!response.body) {
+        throw new Error("The AI response stream is unavailable. Please try again.");
       }
 
       const reader = response.body.getReader();
@@ -233,6 +242,7 @@ function Screen({ chatId }) {
 
       let buffer = "";
       let answer = "";
+      let receivedDone = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -291,7 +301,12 @@ function Screen({ chatId }) {
             });
           }
 
+          if (eventName === "error") {
+            throw new Error(json.error || "The AI could not complete this response.");
+          }
+
           if (eventName === "done") {
+            receivedDone = true;
             setMessages((prev) => {
               if (prev.length === 0) return prev;
 
@@ -355,8 +370,25 @@ function Screen({ chatId }) {
           }
         }
       }
+
+      if (!receivedDone) {
+        throw new Error("The AI response ended unexpectedly. Please try again.");
+      }
     } catch (err) {
       console.error("error in seding to AI", err);
+      setMessages((prev) => {
+        if (!prev[messageIndex]) return prev;
+
+        const updated = [...prev];
+        updated[messageIndex] = {
+          ...updated[messageIndex],
+          assistant: {
+            ...updated[messageIndex].assistant,
+            answer: err.message || "The AI could not respond. Please try again.",
+          },
+        };
+        return updated;
+      });
     }
   };
 
