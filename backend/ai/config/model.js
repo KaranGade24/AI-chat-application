@@ -3,14 +3,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const primaryModel = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const primaryModel = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 // Priority list of Gemini models to fallback across
 const candidateModels = [
   primaryModel,
-  "gemini-3.8-flash",
-  "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
 ].filter(Boolean);
 
 export const FALLBACK_MODELS = [...new Set(candidateModels)];
@@ -34,11 +33,12 @@ export const getChatModel = (temperature = 0.7, model = primaryModel) => {
 /**
  * Streams chat responses with automatic fallback across models if quota is exhausted (429) or model unavailable (404).
  */
-export const streamChatModel = async (messages, temperature = 0.7) => {
+export const streamChatModel = async function* (messages, temperature = 0.7) {
   const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
   let lastErr = null;
 
   for (const model of FALLBACK_MODELS) {
+    let hasYieldedChunk = false;
     try {
       const instance = new ChatGoogleGenerativeAI({
         model,
@@ -46,8 +46,18 @@ export const streamChatModel = async (messages, temperature = 0.7) => {
         temperature,
       });
       const stream = await instance.stream(messages);
-      return stream;
+
+      for await (const chunk of stream) {
+        hasYieldedChunk = true;
+        yield chunk;
+      }
+
+      return;
     } catch (err) {
+      if (hasYieldedChunk) {
+        throw err;
+      }
+
       console.warn(`[Model] Model ${model} stream error: ${err.message}. Trying next fallback...`);
       lastErr = err;
     }
